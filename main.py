@@ -1,7 +1,15 @@
 import telebot
 from telebot import types
+import sqlite3
+
+conn = sqlite3.connect('db/database.db', check_same_thread=False)
+cursor = conn.cursor()
 
 bot = telebot.TeleBot('5798841213:AAFoLRcbeMrrmF4NpFhxX0B6zJU5s4U1ESQ')
+
+def db_table_val(isn1: str):
+    cursor.execute('INSERT INTO test (isn) VALUES (?)', (isn1,))
+    conn.commit()
 
 
 text1 = "«Народ, не знающий своего прошлого, не имеет будущего» М.Ломоносов "
@@ -9,7 +17,14 @@ text2 = "Выбери, какая информация необходима: "
 text3 = "Выбери раздел меню, пожалуйста"
 # text4 =
 # text5 =
-#
+isn2 = ' '
+
+def gisn(message):
+    global isn2
+    isn2 = f'{message.chat.username}'
+    bot.send_message(message.chat.id, "Well done!")
+
+
 
 
 @bot.message_handler(commands=['start'])
@@ -46,6 +61,13 @@ def mes(message):
         btn5 = types.KeyboardButton('В главное меню')
         markup.add(btn1, btn2, btn3, btn4, btn5)
         bot.send_message(message.chat.id, text2, parse_mode='html', reply_markup=markup)
+
+
+    elif get_message_bot == "отправка заявок":
+        bot.send_message(message.chat.id, "Введите ИСН оборудования", parse_mode='html')
+        gisn(message)
+        db_table_val(isn1 = isn2)
+
 
 
     elif get_message_bot == "график":
