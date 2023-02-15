@@ -7,7 +7,11 @@ cursor = conn.cursor()
 
 bot = telebot.TeleBot('5798841213:AAFoLRcbeMrrmF4NpFhxX0B6zJU5s4U1ESQ')
 
-def db_table_val(isn1: str):
+def db_table_val(username1: str):
+    cursor.execute('INSERT INTO test (username) VALUES (?)', (username1,))
+    conn.commit()
+
+def db_isn(isn1: str):
     cursor.execute('INSERT INTO test (isn) VALUES (?)', (isn1,))
     conn.commit()
 
@@ -17,13 +21,21 @@ text2 = "Выбери, какая информация необходима: "
 text3 = "Выбери раздел меню, пожалуйста"
 # text4 =
 # text5 =
+username2 = ' '
 isn2 = ' '
 
-def gisn(message):
-    global isn2
-    isn2 = f'{message.chat.username}'
-    bot.send_message(message.chat.id, "Well done!")
+def add_un(message):
+    global username2
+    username2 = f'{message.chat.username}'
+    bot.send_message(message.chat.id, "Введите ИСН")
 
+
+@bot.message_handler(commands=['addisn'])
+def add_isn(message):
+    global isn2
+    isn2 = f'{message.text.strip().lower()}'
+    bot.send_message(message.chat.id, "Введите номер заявки")
+    db_isn(isn1 = isn2)
 
 
 
@@ -64,9 +76,10 @@ def mes(message):
 
 
     elif get_message_bot == "отправка заявок":
-        bot.send_message(message.chat.id, "Введите ИСН оборудования", parse_mode='html')
-        gisn(message)
-        db_table_val(isn1 = isn2)
+        bot.send_message(message.chat.id, "Заявка учтена", parse_mode='html')
+        add_un(message)
+        db_table_val(username1 = username2)
+
 
 
 
@@ -94,9 +107,6 @@ def mes(message):
     elif get_message_bot == "в главное меню":
         start(message)
 
-    else:
-        markup = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=1)
-        bot.send_message(message.chat.id, text3, parse_mode='html', reply_markup=markup)
 
 
 
