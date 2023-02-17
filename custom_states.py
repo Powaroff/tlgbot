@@ -26,7 +26,7 @@ conn = sqlite3.connect('db/base.db', check_same_thread=False)
 cursor = conn.cursor()
 
 
-bot = telebot.TeleBot('5855602296:AAH3Opri00m9o1TZ9aMZ6OrfzLhqXznENwc')
+bot = telebot.TeleBot('')
 
 
 class MyStates(StatesGroup):
