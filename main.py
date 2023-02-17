@@ -9,7 +9,7 @@ state_storage = StateMemoryStorage()
 conn = sqlite3.connect('db/database.db', check_same_thread=False)
 cursor = conn.cursor()
 
-bot = telebot.TeleBot('5798841213:AAFoLRcbeMrrmF4NpFhxX0B6zJU5s4U1ESQ')
+bot = telebot.TeleBot()
 
 class MyStates(StatesGroup):
     isn = State()
