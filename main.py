@@ -1,19 +1,26 @@
 import telebot
 from telebot import types
 import sqlite3
+from telebot import custom_filters
+from telebot.handler_backends import State, StatesGroup
+from telebot.storage import StateMemoryStorage
 
+state_storage = StateMemoryStorage()
 conn = sqlite3.connect('db/database.db', check_same_thread=False)
 cursor = conn.cursor()
 
 bot = telebot.TeleBot('5798841213:AAFoLRcbeMrrmF4NpFhxX0B6zJU5s4U1ESQ')
 
-def db_table_val(username1: str):
-    cursor.execute('INSERT INTO test (username) VALUES (?)', (username1,))
+class MyStates(StatesGroup):
+    isn = State()
+    num_app = State()
+
+
+def add_data(isn1: str, app1: str, username: str):
+    cursor.execute('INSERT INTO test (isn, num_app, username) VALUES (?,?,?)',
+    (isn1, app1, username,))
     conn.commit()
 
-def db_isn(isn1: str):
-    cursor.execute('INSERT INTO test (isn) VALUES (?)', (isn1,))
-    conn.commit()
 
 
 text1 = "«Народ, не знающий своего прошлого, не имеет будущего» М.Ломоносов "
@@ -21,21 +28,56 @@ text2 = "Выбери, какая информация необходима: "
 text3 = "Выбери раздел меню, пожалуйста"
 # text4 =
 # text5 =
-username2 = ' '
-isn2 = ' '
-
-def add_un(message):
-    global username2
-    username2 = f'{message.chat.username}'
-    bot.send_message(message.chat.id, "Введите ИСН")
 
 
-@bot.message_handler(commands=['addisn'])
-def add_isn(message):
-    global isn2
-    isn2 = f'{message.text.strip().lower()}'
-    bot.send_message(message.chat.id, "Введите номер заявки")
-    db_isn(isn1 = isn2)
+
+@bot.message_handler(commands=['add'])
+def start_ex(message):
+    """
+    Стартовая команда. Здесь мы находимся в начальном состоянии
+    """
+    bot.set_state(message.from_user.id, MyStates.isn, message.chat.id)
+    bot.send_message(message.chat.id, 'Введите ИСН:')
+
+
+@bot.message_handler(state="*", commands=['exit'])
+def any_state(message):
+    """
+    Состояние отмены
+    """
+    bot.send_message(message.chat.id, "Работа с заявками завершена.")
+    bot.delete_state(message.from_user.id, message.chat.id)
+    start(message)
+
+
+@bot.message_handler(state=MyStates.isn)
+def name_get(message):
+    """
+    State 1. Будет обрабатываться, когда состояние пользователя MyStates.name.
+    """
+    bot.send_message(message.chat.id, 'Введите номер заявки:')
+    bot.set_state(message.from_user.id, MyStates.num_app, message.chat.id)
+    with bot.retrieve_data(message.from_user.id, message.chat.id) as data:
+        data['isn'] = message.text
+
+@bot.message_handler(state=MyStates.num_app)
+def ready_for_answer(message):
+    """
+    State 2. Будет обрабатываться, когда состояние пользователя MyStates.age.
+    """
+    with bot.retrieve_data(message.from_user.id, message.chat.id) as data:
+        isn1 = data['isn']
+        app1 = message.text
+        username = message.from_user.username
+        
+        
+        add_data(isn1, app1, username)
+
+        bot.send_message(message.chat.id, "Готово! Заявка учтена.")
+        bot.send_message(message.chat.id, "Для завершения работы с заявками нажмие: /exit\nДля регистрации следующей заявки нажми: /add")
+        
+
+
 
 
 
@@ -76,9 +118,7 @@ def mes(message):
 
 
     elif get_message_bot == "отправка заявок":
-        bot.send_message(message.chat.id, "Заявка учтена", parse_mode='html')
-        add_un(message)
-        db_table_val(username1 = username2)
+        bot.send_message(message.chat.id, "Позвоните на номер 999 и нажмите: /add", parse_mode='html')
 
 
 
@@ -156,4 +196,8 @@ def mes(message):
 #
 #
 #
+
+bot.add_custom_filter(custom_filters.StateFilter(bot))
+bot.add_custom_filter(custom_filters.IsDigitFilter())
+
 bot.polling(none_stop=True, interval=0)
