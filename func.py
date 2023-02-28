@@ -1,13 +1,16 @@
-import telebot
-from telebot import types
-import sqlite3
+# import telebot
+# from telebot import types
+# import sqlite3
 
-conn = sqlite3.connect('db/base.db', check_same_thread=False)
-cursor = conn.cursor()
+# bot = telebot.TeleBot('5798841213:AAFoLRcbeMrrmF4NpFhxX0B6zJU5s4U1ESQ')
 
-cursor.execute("SELECT isn, num_app, username FROM test")
-view = (cursor.fetchmany(5))
-print(view)
+
+# conn = sqlite3.connect('db/base.db', check_same_thread=False)
+# cursor = conn.cursor()
+
+# # cursor.execute('SELECT isn, num_app, username FROM test ORDER BY id DESC')
+# # view = (cursor.fetchmany(3))
+# # print(view)
 
 
 
@@ -15,9 +18,9 @@ print(view)
 
 # @bot.message_handler(commands=['start'])
 # def mes(message):
-#     cursor.execute('SELECT id, text FROM content WHERE id=3'),
-#     viev = (cursor.fetchone()[1])
-#     bot.send_message(message.chat.id, viev, parse_mode='html')
+#     cursor.execute('SELECT isn, num_app, username FROM test ORDER BY id DESC')
+#     view = (cursor.fetchmany(3))
+#     bot.send_message(message.chat.id, view, parse_mode='html')
 
 
 # bot.polling(none_stop=True, interval=0)

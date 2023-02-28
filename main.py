@@ -9,12 +9,20 @@ state_storage = StateMemoryStorage()
 conn = sqlite3.connect('db/base.db', check_same_thread=False)
 cursor = conn.cursor()
 
-bot = telebot.TeleBot('')
+bot = telebot.TeleBot('5798841213:AAFoLRcbeMrrmF4NpFhxX0B6zJU5s4U1ESQ')
 
 class MyStates(StatesGroup):
     isn = State()
     num_app = State()
-
+    t_isn = State()
+    t_n_a = State()
+    t_un = State()
+    t_isn1 = State()
+    t_n_a1 = State()
+    t_un1 = State()
+    t_isn2 = State()
+    t_n_a2 = State()
+    t_un2 = State()
 
 def add_data(isn1: str, app1: str, username: str):
     cursor.execute('INSERT INTO test (isn, num_app, username) VALUES (?,?,?)',
@@ -22,12 +30,11 @@ def add_data(isn1: str, app1: str, username: str):
     conn.commit()
 
 
-
 text1 = "«Народ, не знающий своего прошлого, не имеет будущего» М.Ломоносов."
 text2 = "Выберите, какая информация необходима: "
 text3 = "Выберите раздел меню, пожалуйста."
-# text4 =
-# text5 =
+text4 = "Здесь могли бы быть ответы на КЗ."
+text5 = "<b><u>Последние заявки в базе данных:</u></b>\n" + "<u>|ИСН| Номер заявки| Автор заявки|</u>\n"
 
 
 @bot.message_handler(commands=['sed'])
@@ -84,34 +91,35 @@ def ready_for_answer(message):
         add_data(isn1, app1, username)
 
         bot.send_message(message.chat.id, "Готово! Заявка учтена.")
-        bot.send_message(message.chat.id, "Для завершения работы с заявками нажмите: /exit\n"
-        "Для регистрации следующей заявки нажмите: /add\n")
+        bot.send_message(message.chat.id, "Для регистрации следующей заявки нажмите: /add\n"
+        "Для корректного завершения работы с заявками нажмите: /exit\n")
         
 
 @bot.message_handler(commands=['view'])
 def view(message):
     cursor.execute('SELECT isn FROM test ORDER BY id DESC LIMIT 2, 1')
-    view = (cursor.fetchone())
-    bot.send_message(message.chat.id, view)
+    MyStates.t_isn = (cursor.fetchone())
     cursor.execute('SELECT num_app FROM test ORDER BY id DESC LIMIT 2, 1')
-    view = (cursor.fetchone())
-    bot.send_message(message.chat.id, view)
-
+    MyStates.t_n_a = (cursor.fetchone())
+    cursor.execute('SELECT username FROM test ORDER BY id DESC LIMIT 2, 1')
+    MyStates.t_un = (cursor.fetchone())
     cursor.execute('SELECT isn FROM test ORDER BY id DESC LIMIT 1, 1')
-    view = (cursor.fetchone())
-    bot.send_message(message.chat.id, view)
+    MyStates.t_isn1 = (cursor.fetchone())
     cursor.execute('SELECT num_app FROM test ORDER BY id DESC LIMIT 1, 1')
-    view = (cursor.fetchone())
-    bot.send_message(message.chat.id, view)
-
+    MyStates.t_n_a1 = (cursor.fetchone())
+    cursor.execute('SELECT username FROM test ORDER BY id DESC LIMIT 1, 1')
+    MyStates.t_un1 = (cursor.fetchone())
     cursor.execute('SELECT isn FROM test ORDER BY id DESC')
-    view = (cursor.fetchone())
-    bot.send_message(message.chat.id, view)
+    MyStates.t_isn2 = (cursor.fetchone())
     cursor.execute('SELECT num_app FROM test ORDER BY id DESC')
-    view = (cursor.fetchone())
-    bot.send_message(message.chat.id, view)
-
-
+    MyStates.t_n_a2 = (cursor.fetchone())
+    cursor.execute('SELECT username FROM test ORDER BY id DESC')
+    MyStates.t_un2 = (cursor.fetchone())
+    view = MyStates.t_isn + MyStates.t_n_a + MyStates.t_un
+    view1 = MyStates.t_isn1 + MyStates.t_n_a1 + MyStates.t_un1
+    view2 = MyStates.t_isn2 + MyStates.t_n_a2 + MyStates.t_un2
+    tab = text5 + str(view) + '\n' + str(view1) + '\n' +  str(view2)
+    bot.send_message(message.chat.id, tab, parse_mode='html')
 
 
 
@@ -140,10 +148,14 @@ def mes(message):
         bot.send_message(message.chat.id, text1, parse_mode='html', reply_markup=markup)
 
     elif get_message_bot == "узнать историю":
-        bot.send_message(message.chat.id, "жили-были...", parse_mode='html')
+        cursor.execute('SELECT id, text FROM content WHERE id=11'),
+        view = (cursor.fetchone()[1])
+        bot.send_message(message.chat.id, view, parse_mode='html')
 
     elif get_message_bot == "узнать задачи осиасу":
-        bot.send_message(message.chat.id, "много чего...", parse_mode='html')
+        cursor.execute('SELECT id, text FROM content WHERE id=12'),
+        view = (cursor.fetchone()[1])
+        bot.send_message(message.chat.id, view, parse_mode='html')
 
     elif get_message_bot == "основной раздел":
         markup = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=2)
@@ -160,39 +172,77 @@ def mes(message):
         btn1 = types.KeyboardButton('Контрольные занятия')
         btn2 = types.KeyboardButton('Зачет на старшего машины')
         btn3 = types.KeyboardButton('БГ')
-        btn4 = types.KeyboardButton('Индивидуальные задания 2023')
+        btn4 = types.KeyboardButton('Ведомость актуализации ИРС')
         btn5 = types.KeyboardButton('Основной раздел')
         markup.add(btn1, btn2, btn3, btn4, btn5)
         bot.send_message(message.chat.id, text2, parse_mode='html', reply_markup=markup)
+
+
+    elif get_message_bot == "контрольные занятия":
+        bot.send_message(message.chat.id, text4, parse_mode='html')
+
+
+    elif get_message_bot == "ведомость актуализации ирс":
+        markup = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=2)
+        btn1 = types.KeyboardButton('Февраль')
+        btn2 = types.KeyboardButton('Март')
+        btn3 = types.KeyboardButton('Основной раздел')
+        markup.add(btn1, btn2, btn3)
+        bot.send_message(message.chat.id, text2, parse_mode='html', reply_markup=markup)
+
+
+    elif get_message_bot == "февраль":
+        cursor.execute('SELECT id, text FROM content WHERE id=13'),
+        view = (cursor.fetchone()[1])
+        bot.send_photo(message.chat.id, view, parse_mode='html')
+        cursor.execute('SELECT id, text FROM content WHERE id=14'),
+        view = (cursor.fetchone()[1])
+        bot.send_photo(message.chat.id, view, parse_mode='html')
+        cursor.execute('SELECT id, text FROM content WHERE id=15'),
+        view = (cursor.fetchone()[1])
+        bot.send_photo(message.chat.id, view, parse_mode='html')
+
+
+    elif get_message_bot == "март":
+        cursor.execute('SELECT id, text FROM content WHERE id=16'),
+        view = (cursor.fetchone()[1])
+        bot.send_photo(message.chat.id, view, parse_mode='html')
+        cursor.execute('SELECT id, text FROM content WHERE id=17'),
+        view = (cursor.fetchone()[1])
+        bot.send_photo(message.chat.id, view, parse_mode='html')
+        cursor.execute('SELECT id, text FROM content WHERE id=18'),
+        view = (cursor.fetchone()[1])
+        bot.send_photo(message.chat.id, view, parse_mode='html')
+
 
     elif get_message_bot == "зачет на старшего машины":
         markup = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=2)
-        btn1 = types.KeyboardButton('Назначается...')
-        btn2 = types.KeyboardButton('Изымается...')
-        btn3 = types.KeyboardButton('Обязан...')
-        btn4 = types.KeyboardButton('Запрещается...')
+        btn1 = types.KeyboardButton('Назначается')
+        btn2 = types.KeyboardButton('Изымается')
+        btn3 = types.KeyboardButton('Обязан')
+        btn4 = types.KeyboardButton('Запрещается')
         btn5 = types.KeyboardButton('Основной раздел')
         markup.add(btn1, btn2, btn3, btn4, btn5)
         bot.send_message(message.chat.id, text2, parse_mode='html', reply_markup=markup)
 
-    elif get_message_bot == "назначается...":
+    elif get_message_bot == "назначается":
         cursor.execute('SELECT id, text FROM content WHERE id=4'),
         view = (cursor.fetchone()[1])
         bot.send_message(message.chat.id, view, parse_mode='html')
 
-    elif get_message_bot == "изымается...":
+    elif get_message_bot == "изымается":
         cursor.execute('SELECT id, text FROM content WHERE id=3'),
         view = (cursor.fetchone()[1])
         bot.send_message(message.chat.id, view, parse_mode='html')
 
 
-    elif get_message_bot == "обязан...":
+    elif get_message_bot == "обязан":
         cursor.execute('SELECT id, text FROM content WHERE id=2'),
         view = (cursor.fetchone()[1])
         bot.send_message(message.chat.id, view, parse_mode='html')
 
 
-    elif get_message_bot == "запрещается...":
+    elif get_message_bot == "запрещается":
         cursor.execute('SELECT id, text FROM content WHERE id=1'),
         view = (cursor.fetchone()[1])
         bot.send_message(message.chat.id, view, parse_mode='html')
@@ -221,14 +271,14 @@ def mes(message):
         
 
     elif get_message_bot == "заявка в воентелеком":
-        bot.send_message(message.chat.id, "Узнайте <b>ИСН изделия</b> и позвоните по номеру: +7(495) 000-00-00.\n"
-        "Для учета заявки в базе нажмите: /add\n"
-        "Для просмотра трех крайних заявок: /view", parse_mode='html')
+        bot.send_message(message.chat.id, "Узнайте <b>ИСН изделия</b> и позвоните по номеру: +7(495)609-50-05.\n"
+        "Для учета заявки в базе нажмите: <b>/add</b>\n"
+        "Для просмотра трех крайних заявок: <b>/view</b>", parse_mode='html')
 
     elif get_message_bot == "заявка в ивк (сэд, гарант, саоог)":
         bot.send_message(message.chat.id, "<b>Проблемы с СЭД:</b> Узнайте IP-адрес АРМ и позвоните по номеру:"
         "+7(495) 696-69-72, +7(495) 696-67-49, (10100) 91-18.\n"
-        "(Чтобы узнать IP-адрес рабочего места СЭД нажмите: /sed)\n"
+        "(Чтобы узнать IP-адрес рабочего места СЭД нажмите: <b>/sed</b>)\n"
         "<b>Проблемы с ГАРАНТ:</b> Позвоните по номеру: +7(495) 647-62-38.\n"
         "<b>Проблемы с САООГ:</b> Позвоните по номеру: +7(800) 250-55-49.", parse_mode='html')
 
@@ -289,17 +339,17 @@ def mes(message):
     elif get_message_bot == 'фз "о статусе военнослужащих"':
         markup = types.InlineKeyboardMarkup()
         markup.add(types.InlineKeyboardButton("Читать полностью", url="https://base.garant.ru/178792"))
-        bot.send_message(message.chat.id, 'ФЗ "О статусе военнослужащих"', reply_markup=markup)
+        bot.send_message(message.chat.id, 'Открыть на ГАРАНТе', reply_markup=markup)
 
     elif get_message_bot == 'пр. мо рф №686 "об установлении...компенсации за наем (поднаем)..."':
         markup = types.InlineKeyboardMarkup()
         markup.add(types.InlineKeyboardButton("Читать полностью", url="http://ivo.garant.ru/#/document/406003433/paragraph/1/doclist/1722/showentries/0/highlight/686%20%D0%BC%D0%BE%20%D1%80%D1%84:2"))
-        bot.send_message(message.chat.id, 'ФЗ "О статусе военнослужащих"', reply_markup=markup)
+        bot.send_message(message.chat.id, 'Открыть на ГАРАНТе', reply_markup=markup)
 
     elif get_message_bot == 'нфп-2009>приложение "таблица начисления баллов...по физической подготовке"':
         markup = types.InlineKeyboardMarkup()
         markup.add(types.InlineKeyboardButton("Читать полностью", url="https://base.garant.ru/195845/0bf34b9862b173b3ac6fa5142cdafa87/"))
-        bot.send_message(message.chat.id, 'ФЗ "О статусе военнослужащих"', reply_markup=markup)
+        bot.send_message(message.chat.id, 'Открыть на ГАРАНТе', reply_markup=markup)
 
 
     elif get_message_bot == "канал":
@@ -371,53 +421,6 @@ def mes(message):
         bot.send_message(message.chat.id, "Для выхода в главное меню нажиме: /start", parse_mode='html')
 
 
-
-#
-# #
-#
-#
-#
-# # @bot.message_handler(content_types=['text'])
-# # def mess(message):
-# #     get_message_bot = message.text.strip().lower()
-# #
-# #     if get_message_bot == "история осиасу":
-# #         bot.send_message (message.chat.id, "Однажды в далёкой, далёкой галактике...", parse_mode='html')
-#
-#
-#
-#
-# # @bot.message_handler()
-# # def get_user_text(message):
-# #     if message.text == "Hello":
-# #         bot.send_message(message.chat.id, "И тебе привет!", parse_mode='html')
-# #     elif message.text == "id":
-# #         bot.send_message(message.chat.id, f"Твой ID: {message.from_user.id}", parse_mode='html')
-# #     else:
-# #         bot.send_message(message.chat.id, "Я тебя не понимаю", parse_mode='html')
-#
-#
-# # @bot.message_handler(commands=['website'])
-# # def website(message):
-# #     markup = types.InlineKeyboardMarkup()
-# #     markup.add(types.InlineKeyboardButton("Посетить веб сайт", url="https://dzen.ru"))
-# #     bot.send_message(message.chat.id, "Перейдите на сайт", reply_markup=markup)
-# #
-# # @bot.message_handler(commands=['help'])
-# # def help(message):
-# #     markup = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=1)
-# #     website = types.KeyboardButton('/website')
-# #     start = types.KeyboardButton('/start')
-# #
-# #     markup.add(website, start)
-# #
-# #     bot.send_message(message.chat.id, 'Что будешь делать?', reply_markup=markup)
-#
-#     # markup.add(types.InlineKeyboardButton("Посетить веб сайт", url="https://dzen.ru"))
-#     # bot.send_message(message.chat.id, "Good", reply_markup=markup)
-#
-#
-#
 
 bot.add_custom_filter(custom_filters.StateFilter(bot))
 bot.add_custom_filter(custom_filters.IsDigitFilter())
